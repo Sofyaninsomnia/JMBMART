@@ -293,7 +293,7 @@
             </div>
             <div style="text-align: left;">
                 <span style="margin-top: 10px; font-size: 12px; font-weight: normal; display: inline-block;">
-                    Pembayaran untuk invoice mohon di transfer ke rekening <br>
+                    Pembayaran mohon di transfer ke rekening <br>
                     <span style="font-weight: bold;">Bank Mandiri</span>
                 </span>
 
@@ -303,6 +303,19 @@
                     <br>
                     <span style="display: inline-block; width: 80px;  font-weight: normal;">Atas Nama</span>
                     <span style="display: inline-block;">: {{ $norek->nama }}</span>
+                </div>
+            </div>
+
+        </div>
+        <div class="total-section">
+            <div style="text-align: left;">
+                <span style="margin-top: 10px; font-size: 12px; font-weight: normal; display: inline-block;">
+                    Setelah melakukan transaksi dimohon konfirmasi kepada admin <br>
+                </span>
+
+                <div style="margin-top: 1px;">
+                    <span style="display: inline-block; width: 80px;  font-weight: normal;">Nomor admin</span>
+                    <span style="display: inline-block; font-weight: bold;">: 0821153822331</span>
                 </div>
             </div>
 
