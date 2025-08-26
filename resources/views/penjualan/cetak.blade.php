@@ -298,7 +298,7 @@
                 </span>
 
                 <div style="margin-top: 1px;">
-                    <span style="display: inline-block; width: 80px;  font-weight: normal;">No Rekening</span>  
+                    <span style="display: inline-block; width: 80px;  font-weight: normal;">No Rekening</span>      
                     <span style="display: inline-block;">: {{ $norek->nomor }} </span>
                     <br>
                     <span style="display: inline-block; width: 80px;  font-weight: normal;">Atas Nama</span>
@@ -329,4 +329,4 @@
     </script>
 </body>
 
-</html
+</html>
