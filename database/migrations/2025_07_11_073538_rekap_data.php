@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('rekap_datas', function (Blueprint $table) {
+        Schema::create('rekap_data', function (Blueprint $table) {
             $table->id(); // Pastikan ada kolom id sebagai primary key
             $table->date('tanggal')->nullable();
             $table->integer('data_barang_id')->nullable(); // Pastikan ini sesuai

@@ -7,13 +7,14 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
 use App\Models\Rekap_data;
+use Exception;
 use Illuminate\Support\Facades\Log;
 
 class RekapDataController extends Controller
 {
-    // ========== HARSIAN ========== //
-public function index(Request $request)
+    public function index(Request $request)
     {
+        // dd(session()->all());
         $mode = $request->query('mode', 'harian');
 
         $harianQuery = Rekap_data::selectRaw('tanggal, SUM(penjualan) AS penjualan, SUM(pembelian) AS pembelian, SUM(keuntungan) AS keuntungan')
@@ -21,18 +22,18 @@ public function index(Request $request)
             ->orderByDesc('tanggal');
 
         if ($request->filled('search')) {
-            $harianQuery->havingRaw('tanggal LIKE ?', ['%'.$request->search.'%']);
+            $harianQuery->havingRaw('tanggal LIKE ?', ['%' . $request->search . '%']);
         }
         $rekapHarian = $harianQuery->paginate(10)->withQueryString();
 
         $bulanParam = $request->query('bulan', Carbon::now()->format('Y-m'));
         $bulanDt   = Carbon::parse($bulanParam);
         $rekapBulanan = Rekap_data::selectRaw(
-                'DATE(tanggal) AS tanggal,
+            'DATE(tanggal) AS tanggal,
                  SUM(keuntungan) AS keuntungan,
                  SUM(modal_per_akhir) AS modal_per_akhir,
                  SUM(sub_total) AS sub_total'
-            )
+        )
             ->whereYear('tanggal', $bulanDt->year)
             ->whereMonth('tanggal', $bulanDt->month)
             ->groupBy('tanggal')
@@ -41,11 +42,11 @@ public function index(Request $request)
 
         $tahunParam = $request->query('tahun', Carbon::now()->year);
         $rekapTahunan = Rekap_data::selectRaw(
-                'MONTH(tanggal) AS bulan,
+            'MONTH(tanggal) AS bulan,
                  SUM(keuntungan) AS keuntungan,
                  SUM(modal_per_akhir) AS modal_per_akhir,
                  SUM(sub_total) AS sub_total'
-            )
+        )
             ->whereYear('tanggal', $tahunParam)
             ->groupBy('bulan')
             ->orderBy('bulan')
@@ -82,13 +83,13 @@ public function index(Request $request)
                 ->whereDate('tanggal_keluar', $tanggal)
                 ->sum('jumlah_keluar');
 
-                    Log::info('Penjualan untuk barang ' . $barang->nama_barang . ' pada tanggal ' . $tanggal . ': ' . $penjualan);
+            Log::info('Penjualan untuk barang ' . $barang->nama_barang . ' pada tanggal ' . $tanggal . ': ' . $penjualan);
 
 
             $totalPenjualan = DB::table('barang_keluar')
                 ->where('id_barang', $barang->id_barang)
                 ->whereDate('tanggal_keluar', '>', $tanggal)
-                ->sum('jumlah_keluar'); 
+                ->sum('jumlah_keluar');
             $totalPembelian = DB::table('barang_masuk')
                 ->where('id_barang', $barang->id_barang)
                 ->whereDate('tanggal_masuk', '>', $tanggal)
@@ -146,8 +147,7 @@ public function index(Request $request)
 
         return view('rekap_data.print_bulanan', [
             'rekapBulanan' => $rekap,
-            'bulan' => $bulan->translatedFormat('F Y'),
-            'user' => auth()->user()->name ?? 'Admin'
+            'bulan' => $bulan->translatedFormat('F Y')
         ]);
     }
 
@@ -167,8 +167,7 @@ public function index(Request $request)
 
         return view('rekap_data.print_tahunan', [
             'rekapTahunan' => $rekap,
-            'tahun' => $tahun,
-            'user' => auth()->user()->name ?? 'Admin'
+            'tahun' => $tahun
         ]);
     }
 
@@ -177,49 +176,58 @@ public function index(Request $request)
         $request->validate([
             'tanggal' => 'required|date',
         ]);
+
         $tanggal = $request->tanggal;
-        $barangs = Data_barang::all();
-        foreach ($barangs as $barang) {
-            $pembelian = DB::table('barang_masuk')
-                ->where('id_barang', $barang->id_barang)
-                ->whereDate('tanggal_masuk', $tanggal)
-                ->sum('jumlah_masuk');
 
-            $penjualan = DB::table('barang_keluar')
-                ->where('id_barang', $barang->id_barang)
-                ->whereDate('tanggal_keluar', $tanggal)
-                ->sum('jumlah_keluar');
+        try {
 
-            $stok_awal = $barang->stok + $penjualan - $pembelian;
-            $stok_akhir = $stok_awal + $pembelian - $penjualan;
+            DB::transaction(function () use ($tanggal) {
 
-            $keuntungan = ($barang->harga_jual - $barang->harga_beli) * $penjualan;
-            $modal_per_akhir = $stok_akhir * $barang->harga_beli;
-            $sub_total = $penjualan * $barang->harga_jual;
+                Data_barang::chunk(100, function ($barangs) use ($tanggal) {
+                    foreach ($barangs as $barang) {
+                        $pembelian = DB::table('barang_masuk')
+                            ->where('id_barang', $barang->id_barang)
+                            ->whereDate('tanggal_masuk', $tanggal)
+                            ->sum('jumlah_masuk') ?? 0;
 
-            Rekap_data::updateOrCreate(
-                [
-                    'tanggal' => $tanggal,
-                    'data_barang_id' => $barang->id_barang
-                ],
-                [
-                    'jenis' => 'keluar', 
-                    'jumlah' => $penjualan,
-                    'keterangan' => 'Rekap otomatis',
+                        $penjualan = DB::table('barang_keluar')
+                            ->where('id_barang', $barang->id_barang)
+                            ->whereDate('tanggal_keluar', $tanggal)
+                            ->sum('jumlah_keluar') ?? 0;
 
-                    'stok_awal' => $stok_awal,
-                    'pembelian' => $pembelian,
-                    'penjualan' => $penjualan,
-                    'stok_akhir' => $stok_akhir,
-                    'harga_beli' => $barang->harga_beli,
-                    'harga_jual' => $barang->harga_jual,
-                    'keuntungan' => $keuntungan,
-                    'modal_per_akhir' => $modal_per_akhir,
-                    'sub_total' => $sub_total
-                ]
-            );
+                        $stok_awal = ($barang->stok + $penjualan) - $pembelian;
+                        $stok_akhir = $stok_awal + $pembelian - $penjualan;
+
+                        $keuntungan = ($barang->harga_beli - $barang->harga_jual) * $penjualan;
+                        $modal_akhir = $stok_akhir * $barang->harga_beli;
+
+                        Rekap_data::updateOrCreate(
+                            [
+                                'tanggal'   => $tanggal,
+                                'data_barang_id' => $barang->id_barang
+                            ],
+                            [
+                                'jenis' => 'keluar',
+                                'jumlah' => $penjualan,
+                                'stok_awal' => $stok_awal,
+                                'pembelian' => $pembelian,
+                                'penjualan' => $penjualan,
+                                'stok_akhir' => $stok_akhir,
+                                'harga_beli' => $barang->harga_beli,
+                                'harga_jual' => $barang->harga_jual,
+                                'keuntungan' => $keuntungan,
+                                'modal_per_akhir' => $modal_akhir,
+                                'sub_total' => $penjualan * $barang->harga_jual,
+                            ]
+                        );
+                    }
+                });
+            });
+
+            return redirect()->route('rekap.index')->with('success', "Data rekap harian tanggal $tanggal berhasil di perbarui!");
+        } catch (\Exception $e) {
+            return redirect()->back()
+            ->with('error', "Terjadi kesalahan: " . $e->getMessage());
         }
-
-        return redirect()->route('rekap.index')->with('success', 'Data rekap harian tanggal ' . $tanggal . ' berhasil disimpan');
     }
 }

@@ -7,10 +7,10 @@ use Illuminate\Database\Eloquent\Model;
 class Rekap_data extends Model
 {
     protected $table = 'rekap_data';
-    protected $primaryKey = 'id'; // Sesuai struktur barumu
+    protected $primaryKey = 'id'; 
     public $incrementing = true;
     public $keyType = 'int';
-    public $timestamps = true; // karena kamu pakai created_at & updated_at
+    public $timestamps = true; 
 
     protected $fillable = [
         'tanggal',
