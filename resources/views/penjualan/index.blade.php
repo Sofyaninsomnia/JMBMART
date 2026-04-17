@@ -14,7 +14,7 @@
                     <li class="breadcrumb-item active">Penjualan</li>
                 </ol>
             </nav>
-        </div><!-- End Page Title -->
+        </div>
 
         <section class="section dashboard">
             <div class="row">
@@ -24,8 +24,7 @@
                         <div class="card-body">
                             <h5 class="card-title">Penjualan</h5>
 
-                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal"><i
-                                    class="bi bi-plus"></i> Tambah Penjualan</button>
+                            <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addModal">Buat Mutasi</button>
 
                             <div class="table-responsive">
                                 <table class="table datatable">
@@ -52,7 +51,7 @@
                                             <td>@rupiah($p->total)</td>
                                             <td class="d-flex m-auto justify-content-center align-items-center gap-2">
                                                 <a href="{{ route('penjualan.show', $p->id) }}" class="btn btn-sm btn-success"><i
-                                                        class="bi bi-journal-bookmark-fill" style="color: #ffff"></i></a>
+                                                        class="bi bi-cart2" style="color: #ffff"></i></a>
                                                 <form class="delete-form" action="{{ route('penjualan.destroy', $p->id) }}"
                                                     method="POST">
                                                     @csrf

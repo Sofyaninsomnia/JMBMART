@@ -99,7 +99,8 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/cetak_nota/{id}', [PenjualanController::class, 'cetak_nota'])->name('cetak_nota');
 
     Route::get('/admin/barang_keluar', [App\Http\Controllers\BarangKeluarController::class, 'index'])->name('barang_keluar.index');
-    Route::post('/admin/barang_keluar/store/{id}', [App\Http\Controllers\BarangKeluarController::class, 'storeDetail'])->name('detail_penjualan.store');
+    Route::post('/admin/barang_keluar/store/{id}', [App\Http\Controllers\BarangKeluarController::class, 'viaManual'])->name('detail_penjualan.store');
+    Route::post('/admin/barang_keluar/viaScan/{id}', [App\Http\Controllers\BarangKeluarController::class, 'viaScan'])->name('detail_penjualan.viaScan');
     Route::delete('/admin/barang_keluar/delete/{id_barang_keluar}', [App\Http\Controllers\BarangKeluarController::class, 'destroy'])->name('barang_keluar.destroy');
 
     Route::get('/admin/rekap_data', [App\Http\Controllers\RekapDataController::class, 'index'])->name('rekap_data.index');

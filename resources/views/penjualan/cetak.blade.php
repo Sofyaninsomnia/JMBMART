@@ -281,7 +281,7 @@
                     @empty
                         <tr>
                             <td colspan="5" style="text-align: center;">Tidak ada barang yang tercatat untuk
-                                penjualan ini.</td>
+                                mutasi ini.</td>
                         </tr>
                     @endforelse
                 </tbody>

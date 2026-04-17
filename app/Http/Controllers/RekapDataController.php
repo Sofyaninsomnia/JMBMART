@@ -198,7 +198,7 @@ class RekapDataController extends Controller
                         $stok_awal = ($barang->stok + $penjualan) - $pembelian;
                         $stok_akhir = $stok_awal + $pembelian - $penjualan;
 
-                        $keuntungan = ($barang->harga_beli - $barang->harga_jual) * $penjualan;
+                        $keuntungan = ($barang->harga_jual - $barang->harga_beli) * $penjualan;
                         $modal_akhir = $stok_akhir * $barang->harga_beli;
 
                         Rekap_data::updateOrCreate(
